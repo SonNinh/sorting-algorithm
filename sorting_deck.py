@@ -2,27 +2,37 @@
 
 import argparse
 
+'''
+# recursive bubble
+def bubble(decks, i, end):
+    if end > 1:
+        if decks[i] > decks[i+1]:
+            decks[i], decks[i+1] = decks[i+1], decks[i]
+            print(*decks)
 
-def bubble(decks, i=0, change=0):
-    if decks[i] > decks[i+1]:
-        buffer = decks[i]
-        decks[i] = decks[i+1]
-        decks[i+1] = buffer
-        change += 1
-        for each in decks[:-1]:
-            print(str(each) + " ", end="")
-        print(decks[-1])
-
-    if i+1 == len(decks)-1:
-        if change != 0:
-            bubble(decks, 0, 0)
-    else:
-        bubble(decks, i+1, change)
+        if i+1 == end-1:
+                bubble(decks, 0, end-1)
+        else:
+            bubble(decks, i+1, end)
 
     return decks
+'''
+# loop bubble
+def bubble(decks):
+    n = 0
+    notDone = True
+    while notDone:
+        notDone = False
+        for i in range(0, len(decks)-1-n):
+            if decks[i] > decks[i+1]:
+                decks[i], decks[i+1] = decks[i+1], decks[i]
+                notDone = True
+                print(*decks)
+        n += 1
 
 
 def insertion(decks, i=0):
+    done = False
     if i == len(decks)-1:
         return decks
     else:
@@ -30,25 +40,22 @@ def insertion(decks, i=0):
             if i < len(decks)-2:
                 i += 1
             else:
+                done = True
                 break
-
-        if decks[i+1] < decks[0]:
-            decks.insert(0, decks[i+1])
-            decks.pop(i+2)
-            for each in decks[:-1]:
-                print(str(each) + " ", end="")
-            print(decks[-1])
-            insertion(decks, i+1)
-        else:
-            j = 0
-            while decks[i+1] < decks[j] or decks[i+1] > decks[j+1]:
-                j += 1
-            decks.insert(j+1, decks[i+1])
-            decks.pop(i+2)
-            for each in decks[:-1]:
-                print(str(each) + " ", end="")
-            print(decks[-1])
-            insertion(decks, i+1)
+        if done is False:
+            if decks[i+1] < decks[0]:
+                decks.insert(0, decks[i+1])
+                decks.pop(i+2)
+                print(*decks)
+                insertion(decks, i+1)
+            else:
+                j = 0
+                while decks[i+1] < decks[j] or decks[i+1] > decks[j+1]:
+                    j += 1
+                decks.insert(j+1, decks[i+1])
+                decks.pop(i+2)
+                print(*decks)
+                insertion(decks, i+1)
 
 
 def merge(decks):
@@ -57,8 +64,6 @@ def merge(decks):
         ls = list()
         ls.append(merge(decks[:p]))
         ls.append(merge(decks[p:]))
-        print(ls)
-        # ls = bubble(ls, show=False)
         left = 0
         right = 0
         res = list()
@@ -76,9 +81,7 @@ def merge(decks):
             for node in range(right, len(ls[1])):
                 res.append(ls[1][node])
 
-        for each in res[:-1]:
-            print(str(each) + ' ', end="")
-        print(res[-1])
+        print(*res)
 
         return res
     else:
@@ -87,13 +90,26 @@ def merge(decks):
                 buffer = decks[0]
                 decks[0] = decks[1]
                 decks[1] = buffer
-            for each in decks[:-1]:
-                print(str(each) + " ", end="")
-            print(decks[-1])
+            print(*decks)
         return decks
 
 
-# def quick(decks):
+def quick(decks, left, right):
+    if left < right:
+        i = (left-1)
+        pivot = decks[right]
+
+        for j in range(left, right):
+            if decks[j] <= pivot:
+                i = i+1
+                decks[i], decks[j] = decks[j], decks[i]
+        i += 1
+        decks[i], decks[right] = decks[right], decks[i]
+        print("P:", pivot)
+        print(*decks)
+        quick(decks, left, i-1)
+        quick(decks, i+1, right)
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -110,8 +126,10 @@ def main():
             res = insertion(args.decks)
         elif args.algo == "merge":
             res = merge(args.decks)
-    else:
-        print(args.decks)
+        elif args.algo == "quick":
+            res = quick(args.decks, 0, len(args.decks)-1)
+    # else:
+        # print(args.decks)
 
 
 if __name__ == "__main__":
