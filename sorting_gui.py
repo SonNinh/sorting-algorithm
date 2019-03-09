@@ -16,7 +16,6 @@ background = pyglet.image.load('images/background.jpg')
 circle = pyglet.image.load('images/circle.png')
 circle.anchor_x = circle.width//2
 circle.anchor_y = circle.height//2
-# inputCircle = pyglet.sprite.Sprite(img=circle, batch=batch)
 
 lsOfLabels = list()
 targetPosOfLabels = list()
@@ -38,11 +37,11 @@ with open("log", "r+") as log:
                                   anchor_x='center', anchor_y='center')
     for i, interger in enumerate(lsOfIntergers):
         lsOfLabels.append([pyglet.text.Label(interger, font_size=20,
-                           x=window.width//(lenOfSequence+1)*(i+1),
-                           y=window.height//2,
-                           anchor_x='center', anchor_y='center'),
-                           window.width//(lenOfSequence+1)*(i+1),
-                           window.width//(lenOfSequence+1)*(i+1)])
+                          x=window.width//(lenOfSequence+1)*(i+1),
+                          y=window.height//2,
+                          anchor_x='center', anchor_y='center'),
+                          window.width//(lenOfSequence+1)*(i+1),
+                          window.width//(lenOfSequence+1)*(i+1)])
 
 
 @window.event
@@ -53,16 +52,21 @@ def on_draw():
     algorithm.draw()
     for label in lsOfLabels:
         label[0].draw()
-
+    # print(onProcess)
 
 @window.event
 def on_mouse_press(x, y, button, modifiers):
-    global step, targetPosOfLabels, onProcess
+    global step, targetPosOfLabels, onProcess, lsOfLabels
     if button is mouse.LEFT:
         if onProcess is False:
             if step < len(lsOfSteps)-1:
                 step += 1
                 onProcess = True
+            else:
+                for label in lsOfLabels:
+                    print("a")
+                    label[0].color = (0, 255, 255, 255)
+                return
             a = int(lsOfSteps[step][0])
             b = int(lsOfSteps[step][1])
             if algo == 'bubble':
@@ -85,6 +89,19 @@ def on_mouse_press(x, y, button, modifiers):
                     for i in range(c, d):
                         lsOfLabels[i][1] = lsOfLabels[i+1][1]
                     lsOfLabels[d][1] = buffer
+            elif algo == 'quick':
+                for i, label in enumerate(lsOfLabels):
+                    if i in range(a, b):
+                        label[0].color = (255, 255, 255, 255)
+                    elif i == b:
+                        label[0].color = (100, 0, 255, 255)
+                    else:
+                        label[0].color = (255, 255, 255, 50)
+                if len(lsOfSteps[step]) > 3:
+                    c = int(lsOfSteps[step][2])
+                    d = int(lsOfSteps[step][3])
+                    lsOfLabels[c][1], lsOfLabels[d][1] = lsOfLabels[d][1], lsOfLabels[c][1]
+
             print(step)
         else:
             for label in lsOfLabels:
@@ -104,6 +121,11 @@ def on_mouse_press(x, y, button, modifiers):
                     d = int(lsOfSteps[step][3])
                     lsOfLabels.insert(c, lsOfLabels[d])
                     lsOfLabels.pop(d+1)
+            elif algo == 'quick':
+                if len(lsOfSteps[step]) > 3:
+                    c = int(lsOfSteps[step][2])
+                    d = int(lsOfSteps[step][3])
+                    lsOfLabels[c], lsOfLabels[d] = lsOfLabels[d], lsOfLabels[c]
             onProcess = False
 
 
@@ -116,19 +138,23 @@ def swarp(_):
         a = int(lsOfSteps[step][0])
         b = int(lsOfSteps[step][1])
         for i, label in enumerate(lsOfLabels):
-            if label[0].x > label[1]+2:
-                label[0].x -= 3
+            if label[0].x > label[1]+3:
+                label[0].x -= 4
                 if algo == 'bubble':
                     label[0].y = int(math.sin((label[0].x-label[2])/(label[1]-label[2])*math.pi)*50) + window.height//2
                 elif algo == 'insert' and i == b:
-                    label[0].y = int(math.sin((label[0].x-label[2])/(label[1]-label[2])*math.pi)*260) + window.height//2
+                    label[0].y = int(math.sin((label[0].x-label[2])/(label[1]-label[2])*math.pi)*50) + window.height//2
                 elif algo == 'merge':
-                    label[0].y = int(math.sin((label[0].x-label[2])/(label[1]-label[2])*math.pi)*260) + window.height//2
+                    label[0].y = int(math.sin((label[0].x-label[2])/(label[1]-label[2])*math.pi)*50) + window.height//2
+                elif algo == 'quick':
+                    label[0].y = int(math.sin((label[0].x-label[2])/(label[1]-label[2])*math.pi)*50) + window.height//2
 
                 done = False
-            elif label[0].x+2 < label[1]:
-                label[0].x += 3
+            elif label[0].x+3 < label[1]:
+                label[0].x += 4
                 if algo == 'bubble':
+                    label[0].y = int(math.sin((label[0].x-label[2])/(label[2]-label[1])*math.pi)*50) + window.height//2
+                if algo == 'quick':
                     label[0].y = int(math.sin((label[0].x-label[2])/(label[2]-label[1])*math.pi)*50) + window.height//2
                 done = False
             else:
@@ -146,9 +172,15 @@ def swarp(_):
                     d = int(lsOfSteps[step][3])
                     lsOfLabels.insert(c, lsOfLabels[d])
                     lsOfLabels.pop(d+1)
+            elif algo == 'quick':
+                if len(lsOfSteps[step]) > 3:
+                    c = int(lsOfSteps[step][2])
+                    d = int(lsOfSteps[step][3])
+                    lsOfLabels[c], lsOfLabels[d] = lsOfLabels[d], lsOfLabels[c]
+
             for label in lsOfLabels:
                 label[2] = label[1]
             onProcess = False
 
 
-pyglet.clock.schedule_interval(swarp, 0.01)
+pyglet.clock.schedule_interval(swarp, 1/60)
