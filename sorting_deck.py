@@ -149,27 +149,28 @@ def merge(decks, left, right, log):
         merge(decks, center, right, log)
         i = left
         j = center
-        os.write(log, '{} {} '.format(left, right).encode())
+        os.write(log, '{} {} \n'.format(left, right).encode())
         while i < j and j <= right:
             if decks[i] > decks[j]:
-                os.write(log, '{} {} '.format(i, j).encode())
+                os.write(log, '{} {} '.format(left, right).encode())
+                os.write(log, '{} {} \n'.format(i, j).encode())
                 decks.insert(i, decks[j])
                 decks.pop(j+1)
                 i += 1
                 j += 1
             else:
                 i += 1
-        os.write(log, '\n'.encode())
         print(*decks[left:right+1])
     else:
-        os.write(log, '{} {} '.format(left, right).encode())
+        os.write(log, '{} {} \n'.format(left, right).encode())
         if right - left == 1:
+            os.write(log, '{} {} '.format(left, right).encode())
             if decks[left] > decks[right]:
                 os.write(log, '{} {} '.format(left, right).encode())
                 decks[left], decks[right] = decks[right], decks[left]
-
+            os.write(log, '\n'.encode())
             print(*decks[left:right+1])
-        os.write(log, '\n'.encode())
+        # os.write(log, '\n'.encode())
 
 
 def quick(decks, left, right, log):
@@ -201,7 +202,6 @@ def main():
     parser.add_argument("--gui", action="store_true",
                         help="GUI mode")
     args = parser.parse_args()
-    lsOfDecks = args.decks[1]
 
     if len(args.decks) > 1:
         try:
@@ -233,5 +233,4 @@ def main():
 
 
 if __name__ == "__main__":
-    lsOfDecks = 0
     main()
