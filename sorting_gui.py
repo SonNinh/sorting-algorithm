@@ -1,186 +1,239 @@
 #!/usr/bin/python3
 
-import pyglet
-from pyglet.window import key
-from pyglet.window import mouse
-import os
+import argparse
 import math
+import os
 
-window = pyglet.window.Window(1200, 900)
+'''
+# recursive bubble
+def bubble(decks, i, end):
+    if end > 1:
+        if decks[i] > decks[i+1]:
+            decks[i], decks[i+1] = decks[i+1], decks[i]
+            print(*decks)
 
-window.set_mouse_visible(True)
-batch = pyglet.graphics.Batch()
-
-background = pyglet.image.load('images/background.jpg')
-
-circle = pyglet.image.load('images/circle.png')
-circle.anchor_x = circle.width//2
-circle.anchor_y = circle.height//2
-
-lsOfLabels = list()
-targetPosOfLabels = list()
-step = -1
-lsOfLines = list()
-lsOfSteps = list()
-onProcess = False
-with open("log", "r+") as log:
-    lsOfLines = log.readlines()
-    lsOfIntergers = lsOfLines[0][:-1].split(' ')
-    algo = lsOfLines[1][:-1]
-    lenOfSequence = len(lsOfIntergers)
-    for line in lsOfLines[2:]:
-        lsOfSteps.append(line[:-1].split(' '))
-
-    algorithm = pyglet.text.Label(algo, font_size=40,
-                                  x=window.width//2,
-                                  y=window.height//4*3,
-                                  anchor_x='center', anchor_y='center')
-    for i, interger in enumerate(lsOfIntergers):
-        lsOfLabels.append([pyglet.text.Label(interger, font_size=20,
-                          x=window.width//(lenOfSequence+1)*(i+1),
-                          y=window.height//2,
-                          anchor_x='center', anchor_y='center'),
-                          window.width//(lenOfSequence+1)*(i+1),
-                          window.width//(lenOfSequence+1)*(i+1)])
-
-
-@window.event
-def on_draw():
-    allSprites = list()
-    window.clear()
-    background.blit(0, 0)
-    algorithm.draw()
-    for label in lsOfLabels:
-        label[0].draw()
-    # print(onProcess)
-
-@window.event
-def on_mouse_press(x, y, button, modifiers):
-    global step, targetPosOfLabels, onProcess, lsOfLabels
-    if button is mouse.LEFT:
-        if onProcess is False:
-            if step < len(lsOfSteps)-1:
-                step += 1
-                onProcess = True
-            else:
-                for label in lsOfLabels:
-                    print("a")
-                    label[0].color = (0, 255, 255, 255)
-                return
-            a = int(lsOfSteps[step][0])
-            b = int(lsOfSteps[step][1])
-            if algo == 'bubble':
-                lsOfLabels[a][1], lsOfLabels[b][1] = lsOfLabels[b][1], lsOfLabels[a][1]
-            elif algo == 'insert':
-                buffer = lsOfLabels[a][1]
-                for i in range(a, b):
-                    lsOfLabels[i][1] = lsOfLabels[i+1][1]
-                lsOfLabels[b][1] = buffer
-            elif algo == 'merge':
-                for i, label in enumerate(lsOfLabels):
-                    if i in range(a, b+1):
-                        label[0].color = (255, 255, 255, 255)
-                    else:
-                        label[0].color = (255, 255, 255, 50)
-                if len(lsOfSteps[step]) > 3:
-                    c = int(lsOfSteps[step][2])
-                    d = int(lsOfSteps[step][3])
-                    buffer = lsOfLabels[c][1]
-                    for i in range(c, d):
-                        lsOfLabels[i][1] = lsOfLabels[i+1][1]
-                    lsOfLabels[d][1] = buffer
-            elif algo == 'quick':
-                for i, label in enumerate(lsOfLabels):
-                    if i in range(a, b):
-                        label[0].color = (255, 255, 255, 255)
-                    elif i == b:
-                        label[0].color = (100, 0, 255, 255)
-                    else:
-                        label[0].color = (255, 255, 255, 50)
-                if len(lsOfSteps[step]) > 3:
-                    c = int(lsOfSteps[step][2])
-                    d = int(lsOfSteps[step][3])
-                    lsOfLabels[c][1], lsOfLabels[d][1] = lsOfLabels[d][1], lsOfLabels[c][1]
-
-            print(step)
+        if i+1 == end-1:
+                bubble(decks, 0, end-1)
         else:
-            for label in lsOfLabels:
-                label[0].x = label[1]
-                label[2] = label[1]
-                label[0].y = window.height//2
-            a = int(lsOfSteps[step][0])
-            b = int(lsOfSteps[step][1])
-            if algo == 'bubble':
-                lsOfLabels[a], lsOfLabels[b] = lsOfLabels[b], lsOfLabels[a]
-            elif algo == 'insert':
-                lsOfLabels.insert(a, lsOfLabels[b])
-                lsOfLabels.pop(b+1)
-            elif algo == 'merge':
-                if len(lsOfSteps[step]) > 3:
-                    c = int(lsOfSteps[step][2])
-                    d = int(lsOfSteps[step][3])
-                    lsOfLabels.insert(c, lsOfLabels[d])
-                    lsOfLabels.pop(d+1)
-            elif algo == 'quick':
-                if len(lsOfSteps[step]) > 3:
-                    c = int(lsOfSteps[step][2])
-                    d = int(lsOfSteps[step][3])
-                    lsOfLabels[c], lsOfLabels[d] = lsOfLabels[d], lsOfLabels[c]
-            onProcess = False
+            bubble(decks, i+1, end)
+
+    return decks
+'''
 
 
-def swarp(_):
-    global lsOfLabels
-    global onProcess
-    done = True
+def bubble(decks, log):
+    n = 0
+    notDone = True
+    while notDone:
+        notDone = False
+        for i in range(0, len(decks)-1-n):
+            if decks[i] > decks[i+1]:
+                os.write(log, '{} {}\n'.format(i, i+1).encode())
+                decks[i], decks[i+1] = decks[i+1], decks[i]
+                notDone = True
+                print(*decks)
+        n += 1
 
-    if onProcess is True:
-        a = int(lsOfSteps[step][0])
-        b = int(lsOfSteps[step][1])
-        for i, label in enumerate(lsOfLabels):
-            if label[0].x > label[1]+3:
-                label[0].x -= 4
-                if algo == 'bubble':
-                    label[0].y = int(math.sin((label[0].x-label[2])/(label[1]-label[2])*math.pi)*50) + window.height//2
-                elif algo == 'insert' and i == b:
-                    label[0].y = int(math.sin((label[0].x-label[2])/(label[1]-label[2])*math.pi)*50) + window.height//2
-                elif algo == 'merge':
-                    label[0].y = int(math.sin((label[0].x-label[2])/(label[1]-label[2])*math.pi)*50) + window.height//2
-                elif algo == 'quick':
-                    label[0].y = int(math.sin((label[0].x-label[2])/(label[1]-label[2])*math.pi)*50) + window.height//2
 
-                done = False
-            elif label[0].x+3 < label[1]:
-                label[0].x += 4
-                if algo == 'bubble':
-                    label[0].y = int(math.sin((label[0].x-label[2])/(label[2]-label[1])*math.pi)*50) + window.height//2
-                if algo == 'quick':
-                    label[0].y = int(math.sin((label[0].x-label[2])/(label[2]-label[1])*math.pi)*50) + window.height//2
-                done = False
+'''
+# insertion recursive
+def insertion(decks, i=0):
+    done = False
+    if i == len(decks)-1:
+        return decks
+    else:
+        while decks[i] <= decks[i+1]:
+            if i < len(decks)-2:
+                i += 1
             else:
-                label[0].x = label[1]
-                label[0].y = window.height//2
-        if done is True:
-            if algo == 'bubble':
-                lsOfLabels[a], lsOfLabels[b] = lsOfLabels[b], lsOfLabels[a]
-            elif algo == 'insert':
-                lsOfLabels.insert(a, lsOfLabels[b])
-                lsOfLabels.pop(b+1)
-            elif algo == 'merge':
-                if len(lsOfSteps[step]) > 3:
-                    c = int(lsOfSteps[step][2])
-                    d = int(lsOfSteps[step][3])
-                    lsOfLabels.insert(c, lsOfLabels[d])
-                    lsOfLabels.pop(d+1)
-            elif algo == 'quick':
-                if len(lsOfSteps[step]) > 3:
-                    c = int(lsOfSteps[step][2])
-                    d = int(lsOfSteps[step][3])
-                    lsOfLabels[c], lsOfLabels[d] = lsOfLabels[d], lsOfLabels[c]
-
-            for label in lsOfLabels:
-                label[2] = label[1]
-            onProcess = False
+                done = True
+                break
+        if done is False:
+            if decks[i+1] < decks[0]:
+                decks.insert(0, decks[i+1])
+                decks.pop(i+2)
+                print(*decks)
+                insertion(decks, i+1)
+            else:
+                j = 0
+                while decks[i+1] < decks[j] or decks[i+1] > decks[j+1]:
+                    j += 1
+                decks.insert(j+1, decks[i+1])
+                decks.pop(i+2)
+                print(*decks)
+                insertion(decks, i+1)
+'''
 
 
-pyglet.clock.schedule_interval(swarp, 1/60)
+def insertion(decks, log):
+    for i in range(0, len(decks)-1):
+        if decks[i] > decks[i+1]:
+            for j in range(i, -1, -1):
+                if j > 0:
+                    if decks[i+1] <= decks[j] and decks[i+1] >= decks[j-1]:
+                        os.write(log, '{} {} \n'.format(j, i+1).encode())
+                        decks.insert(j, decks[i+1])
+                        decks.pop(i+2)
+                        break
+                elif j == 0:
+                    os.write(log, '{} {} \n'.format(0, i+1).encode())
+                    decks.insert(0, decks[i+1])
+                    decks.pop(i+2)
+            print(*decks)
+
+
+'''
+0        4
+4 6 7 9  1 3 6 8
+  1        5
+1 4 6 7 9  3 6 8
+    2        6
+1 3 4 6 7 9  6 8
+      3      6
+1 3 4 6 7 9  6 8
+        4    6
+1 3 4 6 7 9  6 8
+          5    7
+1 3 4 6 6 7 9  8
+            5  7
+1 3 4 6 6 7 9  8
+              6
+1 3 4 6 6 7 8 9
+
+        4  5
+1 3 4 6 7  6 8
+           5 6
+1 3 4 6 6  7 8
+'''
+'''
+def merge(decks):
+    if len(decks) > 2:
+        p = len(decks)//2
+        ls = list()
+        ls.append(merge(decks[:p]))
+        ls.append(merge(decks[p:]))
+        left = 0
+        right = 0
+        res = list()
+        while left < len(ls[0]) and right < len(ls[1]):
+            if ls[0][left] <= ls[1][right]:
+                res.append(ls[0][left])
+                left += 1
+            else:
+                res.append(ls[1][right])
+                right += 1
+        if right == len(ls[1]):
+            for node in range(left, len(ls[0])):
+                res.append(ls[0][node])
+        else:
+            for node in range(right, len(ls[1])):
+                res.append(ls[1][node])
+
+        print(*res)
+
+        return res
+    else:
+        if len(decks) == 2:
+            if decks[0] > decks[1]:
+                decks[0], decks[1] = decks[1], decks[0]
+            print(*decks)
+        return decks
+'''
+
+
+def merge(decks, left, right, log):
+
+    if right - left > 1:
+        center = math.ceil((right+left)/2)
+        merge(decks, left, center-1, log)
+        merge(decks, center, right, log)
+        i = left
+        j = center
+        os.write(log, '{} {} \n'.format(left, right).encode())
+        while i < j and j <= right:
+            if decks[i] > decks[j]:
+                os.write(log, '{} {} '.format(left, right).encode())
+                os.write(log, '{} {} \n'.format(i, j).encode())
+                decks.insert(i, decks[j])
+                decks.pop(j+1)
+                i += 1
+                j += 1
+            else:
+                i += 1
+        print(*decks[left:right+1])
+    else:
+        os.write(log, '{} {} \n'.format(left, right).encode())
+        if right - left == 1:
+            os.write(log, '{} {} '.format(left, right).encode())
+            if decks[left] > decks[right]:
+                os.write(log, '{} {} '.format(left, right).encode())
+                decks[left], decks[right] = decks[right], decks[left]
+            os.write(log, '\n'.encode())
+            print(*decks[left:right+1])
+        # os.write(log, '\n'.encode())
+
+
+def quick(decks, left, right, log):
+    if left < right:
+
+        i = (left-1)
+        pivot = decks[right]
+
+        for j in range(left, right):
+            if decks[j] < pivot:
+                i += 1
+                os.write(log, '{} {} '.format(left, right).encode())
+                os.write(log, '{} {} \n'.format(i, j).encode())
+                decks[i], decks[j] = decks[j], decks[i]
+        i += 1
+        os.write(log, '{} {} '.format(left, right).encode())
+        os.write(log, '{} {} \n'.format(i, right).encode())
+
+        decks[i], decks[right] = decks[right], decks[i]
+        print("P:", pivot)
+        print(*decks)
+        quick(decks, left, i-1, log)
+        quick(decks, i+1, right, log)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('decks', type=int, nargs='+',
+                        help="")
+    parser.add_argument("--algo", type=str, default="bubble",
+                        help="algorithm")
+    parser.add_argument("--gui", action="store_true",
+                        help="GUI mode")
+    args = parser.parse_args()
+
+    if len(args.decks) > 1:
+        try:
+            os.unlink("log")
+        except Exception:
+            pass
+        log = os.open("log", os.O_RDWR | os.O_CREAT)
+        os.write(log, ' '.join(str(e) for e in args.decks).encode())
+        os.write(log, '\n'.encode())
+        if args.algo == "bubble":
+            os.write(log, "bubble\n".encode())
+            res = bubble(args.decks, log)
+        elif args.algo == "insert":
+            os.write(log, "insert\n".encode())
+            res = insertion(args.decks, log)
+        elif args.algo == "merge":
+            os.write(log, "merge\n".encode())
+            res = merge(args.decks, 0, len(args.decks)-1, log)
+        elif args.algo == "quick":
+            os.write(log, "quick\n".encode())
+            res = quick(args.decks, 0, len(args.decks)-1, log)
+
+        if args.gui is True:
+            import sorting_gui
+            sorting_gui.pyglet.app.run()
+        os.close(log)
+    # else:
+        # print(args.decks)
+
+
+if __name__ == "__main__":
+    main()
