@@ -33,16 +33,16 @@ with open("log", "r+") as log:
         lsOfSteps.append(line[:-1].split(' '))
 
     algorithm = pyglet.text.Label(algo, font_size=40,
-                              x=window.width//2,
-                              y=window.height//4*3,
-                              anchor_x='center', anchor_y='center')
+                                  x=window.width//2,
+                                  y=window.height//4*3,
+                                  anchor_x='center', anchor_y='center')
     for i, interger in enumerate(lsOfIntergers):
         lsOfLabels.append([pyglet.text.Label(interger, font_size=20,
-                                  x=window.width//(lenOfSequence+1)*(i+1),
-                                  y=window.height//2,
-                                  anchor_x='center', anchor_y='center'),
-                                  window.width//(lenOfSequence+1)*(i+1),
-                                  window.width//(lenOfSequence+1)*(i+1)])
+                           x=window.width//(lenOfSequence+1)*(i+1),
+                           y=window.height//2,
+                           anchor_x='center', anchor_y='center'),
+                           window.width//(lenOfSequence+1)*(i+1),
+                           window.width//(lenOfSequence+1)*(i+1)])
 
 
 @window.event
@@ -69,11 +69,22 @@ def on_mouse_press(x, y, button, modifiers):
                 lsOfLabels[a][1], lsOfLabels[b][1] = lsOfLabels[b][1], lsOfLabels[a][1]
             elif algo == 'insert':
                 buffer = lsOfLabels[a][1]
-                print(id(buffer), id(lsOfLabels[a][1]))
                 for i in range(a, b):
                     lsOfLabels[i][1] = lsOfLabels[i+1][1]
-
                 lsOfLabels[b][1] = buffer
+            elif algo == 'merge':
+                for i, label in enumerate(lsOfLabels):
+                    if i in range(a, b+1):
+                        label[0].color = (255, 255, 255, 255)
+                    else:
+                        label[0].color = (255, 255, 255, 50)
+                if len(lsOfSteps[step]) > 3:
+                    c = int(lsOfSteps[step][2])
+                    d = int(lsOfSteps[step][3])
+                    buffer = lsOfLabels[c][1]
+                    for i in range(c, d):
+                        lsOfLabels[i][1] = lsOfLabels[i+1][1]
+                    lsOfLabels[d][1] = buffer
             print(step)
         else:
             for label in lsOfLabels:
@@ -87,6 +98,12 @@ def on_mouse_press(x, y, button, modifiers):
             elif algo == 'insert':
                 lsOfLabels.insert(a, lsOfLabels[b])
                 lsOfLabels.pop(b+1)
+            elif algo == 'merge':
+                if len(lsOfSteps[step]) > 3:
+                    c = int(lsOfSteps[step][2])
+                    d = int(lsOfSteps[step][3])
+                    lsOfLabels.insert(c, lsOfLabels[d])
+                    lsOfLabels.pop(d+1)
             onProcess = False
 
 
@@ -103,8 +120,11 @@ def swarp(_):
                 label[0].x -= 3
                 if algo == 'bubble':
                     label[0].y = int(math.sin((label[0].x-label[2])/(label[1]-label[2])*math.pi)*50) + window.height//2
-                elif algo == 'insert' and i == b :
-                    label[0].y = int(math.sin((label[0].x-label[2])/(label[1]-label[2])*math.pi)*80) + window.height//2
+                elif algo == 'insert' and i == b:
+                    label[0].y = int(math.sin((label[0].x-label[2])/(label[1]-label[2])*math.pi)*260) + window.height//2
+                elif algo == 'merge':
+                    label[0].y = int(math.sin((label[0].x-label[2])/(label[1]-label[2])*math.pi)*260) + window.height//2
+
                 done = False
             elif label[0].x+2 < label[1]:
                 label[0].x += 3
@@ -120,7 +140,12 @@ def swarp(_):
             elif algo == 'insert':
                 lsOfLabels.insert(a, lsOfLabels[b])
                 lsOfLabels.pop(b+1)
-
+            elif algo == 'merge':
+                if len(lsOfSteps[step]) > 3:
+                    c = int(lsOfSteps[step][2])
+                    d = int(lsOfSteps[step][3])
+                    lsOfLabels.insert(c, lsOfLabels[d])
+                    lsOfLabels.pop(d+1)
             for label in lsOfLabels:
                 label[2] = label[1]
             onProcess = False
