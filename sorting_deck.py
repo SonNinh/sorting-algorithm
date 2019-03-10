@@ -27,8 +27,10 @@ def bubble(decks, log):
     while notDone:
         notDone = False
         for i in range(0, len(decks)-1-n):
+            os.write(log, '{} {} {} \n'.format(i, i+1, n).encode())
             if decks[i] > decks[i+1]:
-                os.write(log, '{} {}\n'.format(i, i+1).encode())
+                os.write(log,
+                         '{} {} {} s \n'.format(i, i+1, n).encode())
                 decks[i], decks[i+1] = decks[i+1], decks[i]
                 notDone = True
                 print(*decks)
@@ -70,41 +72,22 @@ def insertion(decks, log):
         if decks[i] > decks[i+1]:
             for j in range(i, -1, -1):
                 if j > 0:
-                    if decks[i+1] <= decks[j] and decks[i+1] >= decks[j-1]:
-                        os.write(log, '{} {} \n'.format(j, i+1).encode())
+                    if decks[i+1] >= decks[j-1]:
+                        os.write(log,
+                                 '{} {} \n{} {} s \n'.format(j, i+1, j, i+1).encode())
                         decks.insert(j, decks[i+1])
                         decks.pop(i+2)
                         break
-                elif j == 0:
-                    os.write(log, '{} {} \n'.format(0, i+1).encode())
+                    else:
+                        os.write(log, '{} {} \n'.format(j, i+1).encode())
+                else:
+                    os.write(log,
+                             '{} {} \n{} {} s \n'.format(0, i+1, 0, i+1).encode())
                     decks.insert(0, decks[i+1])
                     decks.pop(i+2)
             print(*decks)
 
 
-'''
-0        4
-4 6 7 9  1 3 6 8
-  1        5
-1 4 6 7 9  3 6 8
-    2        6
-1 3 4 6 7 9  6 8
-      3      6
-1 3 4 6 7 9  6 8
-        4    6
-1 3 4 6 7 9  6 8
-          5    7
-1 3 4 6 6 7 9  8
-            5  7
-1 3 4 6 6 7 9  8
-              6
-1 3 4 6 6 7 8 9
-
-        4  5
-1 3 4 6 7  6 8
-           5 6
-1 3 4 6 6  7 8
-'''
 '''
 def merge(decks):
     if len(decks) > 2:
@@ -149,16 +132,17 @@ def merge(decks, left, right, log):
         merge(decks, center, right, log)
         i = left
         j = center
-        os.write(log, '{} {} \n'.format(left, right).encode())
+        os.write(log, '{} {} {} \n'.format(left, right, center).encode())
         while i < j and j <= right:
+            os.write(log, '{} {} '.format(left, right).encode())
             if decks[i] > decks[j]:
-                os.write(log, '{} {} '.format(left, right).encode())
                 os.write(log, '{} {} \n'.format(i, j).encode())
                 decks.insert(i, decks[j])
                 decks.pop(j+1)
                 i += 1
                 j += 1
             else:
+                os.write(log, '{} {} \n'.format(i, i).encode())
                 i += 1
         print(*decks[left:right+1])
     else:
@@ -170,22 +154,23 @@ def merge(decks, left, right, log):
                 decks[left], decks[right] = decks[right], decks[left]
             os.write(log, '\n'.encode())
             print(*decks[left:right+1])
-        # os.write(log, '\n'.encode())
 
 
 def quick(decks, left, right, log):
     if left < right:
-        os.write(log, '{} {} '.format(left, right).encode())
         i = (left-1)
         pivot = decks[right]
 
         for j in range(left, right):
-            if decks[j] <= pivot:
-                i = i+1
-                os.write(log, '{} {} '.format(i, j).encode())
+            if decks[j] < pivot:
+                i += 1
+                os.write(log, '{} {} '.format(left, right).encode())
+                os.write(log, '{} {} \n'.format(i, j).encode())
                 decks[i], decks[j] = decks[j], decks[i]
         i += 1
+        os.write(log, '{} {} '.format(left, right).encode())
         os.write(log, '{} {} \n'.format(i, right).encode())
+
         decks[i], decks[right] = decks[right], decks[i]
         print("P:", pivot)
         print(*decks)
@@ -211,25 +196,21 @@ def main():
         log = os.open("log", os.O_RDWR | os.O_CREAT)
         os.write(log, ' '.join(str(e) for e in args.decks).encode())
         os.write(log, '\n'.encode())
+        os.write(log, args.algo.encode())
+        os.write(log, '\n'.encode())
         if args.algo == "bubble":
-            os.write(log, "bubble\n".encode())
             res = bubble(args.decks, log)
         elif args.algo == "insert":
-            os.write(log, "insert\n".encode())
             res = insertion(args.decks, log)
         elif args.algo == "merge":
-            os.write(log, "merge\n".encode())
             res = merge(args.decks, 0, len(args.decks)-1, log)
         elif args.algo == "quick":
-            os.write(log, "quick\n".encode())
             res = quick(args.decks, 0, len(args.decks)-1, log)
 
         if args.gui is True:
             import sorting_gui
             sorting_gui.pyglet.app.run()
         os.close(log)
-    # else:
-        # print(args.decks)
 
 
 if __name__ == "__main__":
