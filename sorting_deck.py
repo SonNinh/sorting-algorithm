@@ -162,14 +162,17 @@ def quick(decks, left, right, log):
         pivot = decks[right]
 
         for j in range(left, right):
+            os.write(log, '{} {} '.format(left, right).encode())
+            os.write(log, '{} {} \n'.format(i, j).encode())
             if decks[j] < pivot:
                 i += 1
                 os.write(log, '{} {} '.format(left, right).encode())
-                os.write(log, '{} {} \n'.format(i, j).encode())
+                os.write(log, '{} {} s \n'.format(i, j).encode())
                 decks[i], decks[j] = decks[j], decks[i]
+
         i += 1
         os.write(log, '{} {} '.format(left, right).encode())
-        os.write(log, '{} {} \n'.format(i, right).encode())
+        os.write(log, '{} {} s \n'.format(i, right).encode())
 
         decks[i], decks[right] = decks[right], decks[i]
         print("P:", pivot)
