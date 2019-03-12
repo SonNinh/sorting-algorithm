@@ -120,18 +120,21 @@ def setTargetPosQuick(lsOfLabels):
     b = int(lsOfSteps[step][1])
     c = int(lsOfSteps[step][2])
     d = int(lsOfSteps[step][3])
+    print(step, a, b, c, d)
     for i, label in enumerate(lsOfLabels):
-        if i in range(a, c):
+        if i in range(a, c+1):
             label[0].color = (255, 100, 0, 255)
-        elif i in range(c, b):
-            label[0].color = (255, 255, 255, 255)
         elif i == b:
             label[0].color = (100, 0, 255, 255)
+        elif i == d:
+            label[0].color = (0, 255, 1, 255)
+        elif i in range(c+1, b):
+            label[0].color = (255, 255, 255, 255)
         else:
             label[0].color = (255, 255, 255, 50)
-
-    lsOfLabels[c][1], lsOfLabels[d][1] = lsOfLabels[d][1], lsOfLabels[c][1]
-
+    if len(lsOfSteps[step]) == 6:
+        lsOfLabels[c][0].color = (255, 255, 255, 255)
+        lsOfLabels[c][1], lsOfLabels[d][1] = lsOfLabels[d][1], lsOfLabels[c][1]
 
 @window.event
 def on_mouse_press(x, y, button, modifiers):
@@ -178,10 +181,12 @@ def on_mouse_press(x, y, button, modifiers):
                     lsOfLabels.pop(d+1)
                     lsOfLabels[c][0].color = (255, 255, 255, 255)
             elif algo == 'quick':
-                if len(lsOfSteps[step]) > 3:
+                if len(lsOfSteps[step]) == 6:
                     c = int(lsOfSteps[step][2])
                     d = int(lsOfSteps[step][3])
                     lsOfLabels[c], lsOfLabels[d] = lsOfLabels[d], lsOfLabels[c]
+                    lsOfLabels[d][0].color = (255, 255, 255, 255)
+                    lsOfLabels[c][0].color = (255, 100, 0, 255)
             onProcess = False
 
 
@@ -227,12 +232,12 @@ def animation(_):
                     lsOfLabels.pop(d+1)
                     lsOfLabels[c][0].color = (255, 255, 255, 255)
             elif algo == 'quick':
-                if len(lsOfSteps[step]) > 3:
+                if len(lsOfSteps[step]) == 6:
                     c = int(lsOfSteps[step][2])
                     d = int(lsOfSteps[step][3])
                     lsOfLabels[c], lsOfLabels[d] = lsOfLabels[d], lsOfLabels[c]
-                    for i in range(a, c+1):
-                        lsOfLabels[i][0].color = (255, 100, 0, 255)
+                    lsOfLabels[d][0].color = (255, 255, 255, 255)
+                    lsOfLabels[c][0].color = (255, 100, 0, 255)
 
             for label in lsOfLabels:
                 label[2] = label[1]
