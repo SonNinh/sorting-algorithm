@@ -4,22 +4,6 @@ import argparse
 import math
 import os
 
-'''
-# recursive bubble
-def bubble(decks, i, end):
-    if end > 1:
-        if decks[i] > decks[i+1]:
-            decks[i], decks[i+1] = decks[i+1], decks[i]
-            print(*decks)
-
-        if i+1 == end-1:
-                bubble(decks, 0, end-1)
-        else:
-            bubble(decks, i+1, end)
-
-    return decks
-'''
-
 
 def bubble(decks, log):
     n = 0
@@ -27,74 +11,50 @@ def bubble(decks, log):
     while notDone:
         notDone = False
         for i in range(0, len(decks)-1-n):
-            os.write(log, '{} {} {} \n'.format(i, i+1, n).encode())
+            os.write(log, '{} {} {}\n'.format(i, i+1, n).encode())
             if decks[i] > decks[i+1]:
-                os.write(log,
-                         '{} {} {} s \n'.format(i, i+1, n).encode())
+                os.write(log, '{} {} {} s\n'.format(i, i+1, n).encode())
                 decks[i], decks[i+1] = decks[i+1], decks[i]
                 notDone = True
                 print(*decks)
         n += 1
 
 
-'''
-# insertion recursive
-def insertion(decks, i=0):
-    done = False
-    if i == len(decks)-1:
-        return decks
-    else:
-        while decks[i] <= decks[i+1]:
-            if i < len(decks)-2:
-                i += 1
+def insertion(decks, log):
+    def checkBackInsertion(decks, log, i):
+        '''
+        Find the relevant posision to insert wrong-pos interger
+        '''
+        for j in range(i, -1, -1):
+            os.write(log, '{} {}\n'.format(j, i+1).encode())
+            if j > 0:
+                if decks[i+1] >= decks[j-1]:
+                    os.write(log, '{} {} s\n'.format(j, i+1).encode())
+                    decks.insert(j, decks[i+1])
+                    decks.pop(i+2)
+                    break
             else:
-                done = True
-                break
-        if done is False:
-            if decks[i+1] < decks[0]:
+                os.write(log, '{} {} s\n'.format(0, i+1).encode())
                 decks.insert(0, decks[i+1])
                 decks.pop(i+2)
-                print(*decks)
-                insertion(decks, i+1)
-            else:
-                j = 0
-                while decks[i+1] < decks[j] or decks[i+1] > decks[j+1]:
-                    j += 1
-                decks.insert(j+1, decks[i+1])
-                decks.pop(i+2)
-                print(*decks)
-                insertion(decks, i+1)
-'''
+        print(*decks)
 
-
-def insertion(decks, log):
     for i in range(0, len(decks)-1):
+        '''
+        Find the wrong-pos point
+        '''
         if decks[i] > decks[i+1]:
-            for j in range(i, -1, -1):
-                if j > 0:
-                    if decks[i+1] >= decks[j-1]:
-                        os.write(log,
-                                 '{} {} \n{} {} s \n'.format(j, i+1, j, i+1).encode())
-                        decks.insert(j, decks[i+1])
-                        decks.pop(i+2)
-                        break
-                    else:
-                        os.write(log, '{} {} \n'.format(j, i+1).encode())
-                else:
-                    os.write(log,
-                             '{} {} \n{} {} s \n'.format(0, i+1, 0, i+1).encode())
-                    decks.insert(0, decks[i+1])
-                    decks.pop(i+2)
-            print(*decks)
+            checkBackInsertion(decks, log, i)
+        else:
+            os.write(log, '{} {}\n'.format(i, i+1).encode())
 
 
-'''
-def merge(decks):
+def mergeOutPlace(decks):
     if len(decks) > 2:
         p = len(decks)//2
         ls = list()
-        ls.append(merge(decks[:p]))
-        ls.append(merge(decks[p:]))
+        ls.append(mergeOutPlace(decks[:p]))
+        ls.append(mergeOutPlace(decks[p:]))
         left = 0
         right = 0
         res = list()
@@ -113,7 +73,6 @@ def merge(decks):
                 res.append(ls[1][node])
 
         print(*res)
-
         return res
     else:
         if len(decks) == 2:
@@ -121,59 +80,62 @@ def merge(decks):
                 decks[0], decks[1] = decks[1], decks[0]
             print(*decks)
         return decks
-'''
 
 
 def merge(decks, left, right, log):
-
-    if right - left > 1:
-        center = math.ceil((right+left)/2)
-        merge(decks, left, center-1, log)
-        merge(decks, center, right, log)
+    '''
+    In-place merge sort
+    '''
+    def arrange2SortedList():
+        '''
+        Create new sorted list from 2 sorted lists
+        '''
         i = left
         j = center
-        os.write(log, '{} {} {} \n'.format(left, right, center).encode())
+        os.write(log, '{} {} {}\n'.format(left, right, center).encode())
         while i < j and j <= right:
             os.write(log, '{} {} '.format(left, right).encode())
             if decks[i] > decks[j]:
-                os.write(log, '{} {} \n'.format(i, j).encode())
+                os.write(log, '{} {} s\n'.format(i, j).encode())
                 decks.insert(i, decks[j])
                 decks.pop(j+1)
                 i += 1
                 j += 1
             else:
-                os.write(log, '{} {} \n'.format(i, i).encode())
+                os.write(log, '{} {} s\n'.format(i, i).encode())
                 i += 1
         print(*decks[left:right+1])
+
+    center = math.ceil((right+left)/2)
+    if right - left > 1:
+        merge(decks, left, center-1, log)
+        merge(decks, center, right, log)
+        arrange2SortedList()
+    elif right - left == 1:
+        arrange2SortedList()
     else:
-        os.write(log, '{} {} \n'.format(left, right).encode())
-        if right - left == 1:
-            os.write(log, '{} {} '.format(left, right).encode())
-            if decks[left] > decks[right]:
-                os.write(log, '{} {} '.format(left, right).encode())
-                decks[left], decks[right] = decks[right], decks[left]
-            os.write(log, '\n'.encode())
-            print(*decks[left:right+1])
+        os.write(log, '{} {}\n'.format(left, right).encode())
 
 
 def quick(decks, left, right, log):
-    if left < right:
-        i = (left-1)
-        pivot = decks[right]
-
+    def partition(i, pivot):
         for j in range(left, right):
             os.write(log, '{} {} '.format(left, right).encode())
-            os.write(log, '{} {} \n'.format(i, j).encode())
+            os.write(log, '{} {}\n'.format(i, j).encode())
             if decks[j] < pivot:
                 i += 1
                 os.write(log, '{} {} '.format(left, right).encode())
-                os.write(log, '{} {} s \n'.format(i, j).encode())
+                os.write(log, '{} {} s\n'.format(i, j).encode())
                 decks[i], decks[j] = decks[j], decks[i]
-
         i += 1
         os.write(log, '{} {} '.format(left, right).encode())
-        os.write(log, '{} {} s \n'.format(i, right).encode())
+        os.write(log, '{} {} s\n'.format(i, right).encode())
+        return i
 
+    if left < right:
+        i = (left-1)
+        pivot = decks[right]
+        i = partition(i, pivot)
         decks[i], decks[right] = decks[right], decks[i]
         print("P:", pivot)
         print(*decks)
@@ -210,10 +172,10 @@ def main():
         elif args.algo == "quick":
             res = quick(args.decks, 0, len(args.decks)-1, log)
 
+        os.close(log)
         if args.gui is True:
             import sorting_gui
-            sorting_gui.pyglet.app.run()
-        os.close(log)
+            sorting_gui.main()
 
 
 if __name__ == "__main__":
