@@ -143,6 +143,36 @@ def quick(decks, left, right, log):
         quick(decks, i+1, right, log)
 
 
+def heap(decks, n):
+    def heapify(i, n, decks):
+        max_i = i
+        left = i*2+1
+        right = i*2+2
+        if left < n:
+            if decks[max_i] < decks[left]:
+                max_i = left
+        
+        if right < n:
+            if decks[max_i] < decks[right]:
+                max_i = right
+
+        if i != max_i:
+            decks[i], decks[max_i] = decks[max_i], decks[i]
+            heapify(max_i, n, decks)
+
+
+    for i in range(n-1, -1, -1):
+        heapify(i, n, decks)
+
+ 
+    for ite in range(n-1, 0, -1):
+        decks[ite], decks[0] = decks[0], decks[ite]
+        heapify(0, ite, decks)
+        
+
+    print(decks)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('decks', type=int, nargs='+',
@@ -163,6 +193,7 @@ def main():
         os.write(log, '\n'.encode())
         os.write(log, args.algo.encode())
         os.write(log, '\n'.encode())
+
         if args.algo == "bubble":
             res = bubble(args.decks, log)
         elif args.algo == "insert":
@@ -171,6 +202,8 @@ def main():
             res = merge(args.decks, 0, len(args.decks)-1, log)
         elif args.algo == "quick":
             res = quick(args.decks, 0, len(args.decks)-1, log)
+        elif args.algo == "heap":
+            heap(args.decks, len(args.decks))
 
         os.close(log)
         if args.gui is True:
